@@ -21,26 +21,39 @@ If you don't already have a GitHub account, go to GitHub.com and create one.
 
 ![](pics/github.png)
 
-## Step 2. Create a repository
+## Step 2. Create a repository (part 1)
 
 Sign in to your GitHub account and create a new repository.
 
 - make it public
 - add a Readme.md file
 
+
+## Step 2. Create a repository (part 2)
+
 ![](pics/new_repo.png)
+
 
 ## Step 3. Install Git
 
 Download and install from here [git](https://git-scm.com/downloads)
 
-## Step 4. Configure git
+## Step 4. Configure git (part 1)
 
 The Git client needs to know who you are before you can start to use it.
 
 - Open your File Explorer
 - Right click in any folder
 - Select "Git Bash here"
+
+## Step 4. Configure git (part 2)
+
+![](pics/bash.png)
+
+## Step 4. Configure git (part 3)
+
+- git config --global user.name "prvernier"
+- git config --global user.email "pierre.vernier@gmail.com"
 
 
 ## Step 5. Install GitHub Desktop
@@ -70,5 +83,5 @@ If you'd rather not work at the command line with Git, you can download a GUI cl
 
 There are many online resources online.
 
-- Do a Google search
-- https://happygitwithr.com/ (excellent one stop resource!)
+- Do a Google search e.g., "git and github primer"
+- [happygitwithr](https://happygitwithr.com/) (excellent one stop resource!)
