@@ -52,6 +52,7 @@ The Git client needs to know who you are before you can start to use it.
 
 ## Step 4. Configure git (part 3)
 
+
 - git config --global user.name "prvernier"
 - git config --global user.email "pierre.vernier@gmail.com"
 
