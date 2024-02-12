@@ -1,0 +1,124 @@
+---
+title: "Subalpine fir distribution - Part 1"
+subtitle: "Pierre Vernier (2024-02-05)"
+format: html
+toc: true
+---
+
+# Objectives
+
+- To read and view a map of your study area
+- To download species data from GBIF
+- To map the distribution of species in your study area
+
+You will first need to make sure you have the R packages listed below, otherwise you will need to install them using the `install.packages` function:
+
+```{r}
+# Uncomment the next line to install the packages
+#install.packages(c('sf', 'tmap', 'dplyr', 'terra', 'tmaptools', 'geodata', 'mapview'))
+```
+
+
+```{r}
+library(sf)
+library(tmap)
+library(dplyr)
+library(terra)
+library(tmaptools)
+library(geodata)
+library(mapview)
+```
+
+# Study area
+
+The example study area is the Kaska Dene Traditional Territory.
+
+```{r}
+bnd <- st_read('data/kdtt.gpkg', 'bnd', quiet=TRUE)
+plot(bnd)
+```
+
+### Plot geometry only
+
+```{r}
+plot(st_geometry(bnd))
+```
+
+
+### Plot using the `tmap` package
+
+```{r}
+tmap_mode("plot")
+tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
+```
+
+### Add a basemap
+
+```{r}
+tm_basemap(server = "Esri.WorldTopoMap") +
+tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
+```
+
+### View interactive map
+
+```{r}
+mapview(bnd)
+```
+
+# Distribution data
+
+Since I don't have any of my own data, I will try to acquire existing subalpine fir location data. Sources of species distribution data include the Global Biodiversity Information Facility (GBIF). The `geodata` includes a function to download data from GBIF.
+
+```{r}
+
+# Specify genus and species for species of interest (e.g., alces alces for moose)
+genus = 'abies'
+species = 'lasiocarpa'
+
+# Buffer by 100k (optional but may result in additional nearby data)
+bnd100 <- st_buffer(bnd, 100000)
+
+# Download GBIF data and convert to sf point object
+g <- sp_occurrence(genus, species, geo=TRUE, end=2500)
+
+gg <- select(g, lon, lat, year) %>%
+  st_as_sf(coords = c("lon", "lat"), crs=4326) %>%
+  st_transform(3578)
+gg
+```
+
+### Map download points
+
+```{r}
+mapview(bnd100, alpha.regions=0, lwd=1) + 
+  mapview(bnd, alpha.regions=0, lwd=1) + 
+  mapview(gg, cex=1, col='red', col.regions='red', legend=NULL)
+```
+
+### Select subset of data
+
+```{r}
+# Select points that are within the buffered study region
+gg_sub <- gg[bnd100,]
+gg_sub
+```
+
+### Plot subalpine fir locations
+
+```{r}
+# Plot AOI + points
+tm_basemap(server = c("Esri.WorldTopoMap", "Esri.WorldImagery")) +
+tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2) +
+  tm_shape(bnd100) + tm_polygons(color='black', fill_alpha=0, lwd=1) +
+    tm_shape(gg_sub) + tm_dots()
+```
+
+### Plot subalpine fir locations (interactive)
+
+```{r}
+library(mapview)
+mapview(bnd100, alpha.regions=0, lwd=1) + 
+  mapview(bnd, alpha.regions=0, lwd=1) + 
+  mapview(gg_sub, cex=4, col='red', col.regions='red', legend=NULL)
+```
+
