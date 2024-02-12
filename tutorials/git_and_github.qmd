@@ -1,0 +1,74 @@
+---
+title: "Git and GitHub"
+format: revealjs
+editor: visual
+---
+
+## Getting started with Git and GitHub
+
+1. Create GitHub account
+2. Create a repository
+3. Install git
+4. Configure git
+5. Install GitHub Desktop
+6. Clone repository to your computer
+7. Make some changes to your repository
+8. Push your changes back to GitHub
+
+## Step 1. Create a GitHub account
+
+If you don't already have a GitHub account, go to GitHub.com and create one.
+
+![](pics/github.png)
+
+## Step 2. Create a repository
+
+Sign in to your GitHub account and create a new repository.
+
+- make it public
+- add a Readme.md file
+
+![](pics/new_repo.png)
+
+## Step 3. Install Git
+
+Download and install from here [git](https://git-scm.com/downloads)
+
+## Step 4. Configure git
+
+The Git client needs to know who you are before you can start to use it.
+
+- Open your File Explorer
+- Right click in any folder
+- Select "Git Bash here"
+
+
+## Step 5. Install GitHub Desktop
+
+If you'd rather not work at the command line with Git, you can download a GUI client such as GitHub Desktop.
+
+- [GitHub Desktop](https://desktop.github.com/)
+
+
+## Step 6. Clone repository to your computer
+
+- Open GitHub Desktop and clone the repository you just created.
+
+## Step 7. Make some changes to your repository
+
+- Open your Readme.md file
+- Add some text and save it
+
+## Step 8. Push your changes back to GitHub
+
+- Open GitHub Desktop
+- Add a comment
+- Commit changes
+- Push changes
+
+## Step 9. Helful resources
+
+There are many online resources online.
+
+- Do a Google search
+- https://happygitwithr.com/ (excellent one stop resource!)
