@@ -32,7 +32,7 @@
     "href": "resources.html",
     "title": "Resources",
     "section": "",
-    "text": "Popovic et al. 2024. Four principles for improved statistical ecology.\nZuur et al. 2010\nZuur et al. 2016"
+    "text": "Data wrangling, exploration, and analysis\n\nSTAT 545 @ UBC\nSTAT 545 (original course)\n\nMovement data\n\nhttps://terpconnect.umd.edu/~egurarie/teaching/SpatialModelling_AKTWS2018/index.html\n\nGit and Github\n\nhttps://happygitwithr.com/\n\n\n\n\n\nhttps://quarto.org/ (the latest iteration of markdown - very flexible)\nhttps://bookdown.org/pdr_higgins/rmrwr/introduction-to-r-markdown.html\n\nShiny apps\n\nhttps://mastering-shiny.org/index.html\nhttps://bookdown.org/pdr_higgins/rmrwr/a-gentle-introduction-to-shiny.html\n\nGeocomputation\n\nhttps://geocompx.org/\n\n\n\n\n\nPopovic et al. 2024. Four principles for improved statistical ecology.\nZuur et al. 2010\nZuur et al. 2016"
   },
   {
     "objectID": "resources.html#key-papers",
@@ -46,7 +46,7 @@
     "href": "index.html",
     "title": "Coding Resources",
     "section": "",
-    "text": "Quantitative Skills for Conservation Scientists\nObjectives: Learn quantitative skills to conduct a fully replicable analysis\n\nGit and Github\nMarkdown\nR and/or Python\nShiny apps\nStorymaps\n\nCreate an individual Github repository to host your code and data and enable others to review and replicate your analysis\nConduct a complete analysis using your own dataset(s)\nCreate a group Github repository to organize useful resources e.g., bookmarks, online tutorials, tips, etc.\nSchedule:\nWeek 1 (2024-01-29)\n\nIndividual and group objectives\nCreate a provisional schedule\n\nHomework:\n\nInstall R/RStudio, Python/RStudio, or Colab\nCreate an account on Github and install git and GitHub Desktop\nhttps://rverse-tutorials.github.io/RWorkflow-NWFSC-2022/week1-introtogit.html\n\nWeek 2 (2024-01-29)\n\nZach to present his project\nMaegan to present his project = Subalpine fir tutorial - part 1\n\nWeek 3 (2024-01-29)\n\nCloning the �coding� repo\nSubalpine fir tutorial - part 2\nGabriel to present his project\n\nWeek 4 (2024-01-29)\nWeek 5 (2024-01-29)\nWeek 6 (2024-01-29)\nWeek 7 (2024-01-29)\nWeek 8 (2024-01-29)\nWeek 9 (2024-01-29)\nResources\nData wrangling, exploration, and analysis STAT 545 @ UBC STAT 545 (original course)\nMovement data https://terpconnect.umd.edu/~egurarie/teaching/SpatialModelling_AKTWS2018/index.html\nGit and Github https://happygitwithr.com/\nMarkdown https://quarto.org/ (the latest iteration of markdown - very flexible) https://bookdown.org/pdr_higgins/rmrwr/introduction-to-r-markdown.html\nShiny apps https://mastering-shiny.org/index.html https://bookdown.org/pdr_higgins/rmrwr/a-gentle-introduction-to-shiny.html\nGeocomputation https://geocompx.org/"
+    "text": "Quantitative Skills for Conservation Scientists\n\nhttps://docs.google.com/document/d/1kloZEdbjhJQ52IhjIwZva8ApS4JgS1xAtxB4Kw8mMcs/edit\n\nObjectives: Learn quantitative skills to conduct a fully replicable analysis\n\nGit and Github\nMarkdown\nR and/or Python\nShiny apps\nStorymaps\n\nThe resources within these pages will help you to:\n\nCreate an individual Github repository to host your code and data and enable others to review and replicate your analysis\nConduct a complete analysis using your own dataset(s)\nCreate a group Github repository to organize useful resources e.g., bookmarks, online tutorials, tips, etc.\n\nSchedule:\nWeek 1 (2024-01-29)\n\nIndividual and group objectives\nCreate a provisional schedule\nInstall R/RStudio, Python/RStudio, or Colab\nCreate an account on Github and install git and GitHub Desktop\nhttps://rverse-tutorials.github.io/RWorkflow-NWFSC-2022/week1-introtogit.html\n\nWeek 2 (2024-02-05)\n\nZach to present his project\nMaegan to present his project = Subalpine fir tutorial - part 1\n\nWeek 3 (2024-02-12)\n\nCloning the �coding� repo\nSubalpine fir tutorial - part 2\nGabriel to present his project\n\nWeek 4 (2024-02-26)"
   },
   {
     "objectID": "tips/github.html",
@@ -187,5 +187,19 @@
     "title": "Subalpine fir distribution - Part 2",
     "section": "Map presence-absence (interactive mode)",
     "text": "Map presence-absence (interactive mode)\n\ntmap_mode(\"plot\")\ntm_basemap(server = c(\"Esri.WorldTopoMap\", \"Esri.WorldImagery\")) +\n  tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2) +\n    tm_shape(abla) + tm_dots(fill='PresenceAbsence', size=0.3,\n    fill.legend = tm_legend(title = \"Subalpine Fir\", position = tm_pos_in(\"right\", \"top\"))) +\n    tm_layout(legend.text.size = 0.8)\n\n\n\n\n\n\n\n\n\nlibrary(mapview)\nmapview(bnd, alpha.regions=0, lwd=2) + \n  mapview(abla, zcol='PresenceAbsence', col.regions=c('red','blue'), cex=2)"
+  },
+  {
+    "objectID": "resources.html#websites",
+    "href": "resources.html#websites",
+    "title": "Resources",
+    "section": "",
+    "text": "Data wrangling, exploration, and analysis\n\nSTAT 545 @ UBC\nSTAT 545 (original course)\n\nMovement data\n\nhttps://terpconnect.umd.edu/~egurarie/teaching/SpatialModelling_AKTWS2018/index.html\n\nGit and Github\n\nhttps://happygitwithr.com/"
+  },
+  {
+    "objectID": "resources.html#markdown",
+    "href": "resources.html#markdown",
+    "title": "Resources",
+    "section": "",
+    "text": "https://quarto.org/ (the latest iteration of markdown - very flexible)\nhttps://bookdown.org/pdr_higgins/rmrwr/introduction-to-r-markdown.html\n\nShiny apps\n\nhttps://mastering-shiny.org/index.html\nhttps://bookdown.org/pdr_higgins/rmrwr/a-gentle-introduction-to-shiny.html\n\nGeocomputation\n\nhttps://geocompx.org/"
   }
 ]

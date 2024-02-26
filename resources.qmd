@@ -5,7 +5,7 @@
 Data wrangling, exploration, and analysis
 
 - STAT 545 @ UBC 
-STAT 545 (original course)
+- STAT 545 (original course)
 
 Movement data
 
