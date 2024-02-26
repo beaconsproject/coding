@@ -1,0 +1,36 @@
+# Resources
+
+## Websites
+
+Data wrangling, exploration, and analysis
+
+- STAT 545 @ UBC 
+STAT 545 (original course)
+
+Movement data
+
+- https://terpconnect.umd.edu/~egurarie/teaching/SpatialModelling_AKTWS2018/index.html 
+
+Git and Github
+
+- https://happygitwithr.com/ 
+
+Markdown
+- 
+- https://quarto.org/ (the latest iteration of markdown - very flexible)
+- https://bookdown.org/pdr_higgins/rmrwr/introduction-to-r-markdown.html 
+
+Shiny apps
+
+- https://mastering-shiny.org/index.html
+- https://bookdown.org/pdr_higgins/rmrwr/a-gentle-introduction-to-shiny.html
+
+Geocomputation
+
+- https://geocompx.org/ 
+
+## Key papers
+
+- Popovic et al. 2024. Four principles for improved statistical ecology.
+- Zuur et al. 2010
+- Zuur et al. 2016

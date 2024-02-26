@@ -1,0 +1,20 @@
+{
+  "tutorials/subfir3_covars.qmd": {
+    "subfir3_covars.html": "d53812e8"
+  },
+  "tutorials/subfir1_gbif.qmd": {
+    "subfir1_gbif.html": "c4e4967d"
+  },
+  "tutorials/subfir2_raster.qmd": {
+    "subfir2_raster.html": "87cac01b"
+  },
+  "index.qmd": {
+    "index.html": "54be6fb1"
+  },
+  "tips/github.qmd": {
+    "github.html": "f505d1ab"
+  },
+  "resources.qmd": {
+    "resources.html": "12d99bb5"
+  }
+}

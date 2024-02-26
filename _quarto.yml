@@ -1,0 +1,30 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Coding Resources"
+  navbar:
+    background: primary
+    left:
+      - href: index.qmd
+        text: Home
+      - text: "Tips"
+        menu:
+        - href: tips/github.qmd
+          text: Installing git & github
+      - text: "Tutorials"
+        menu:
+        - href: tutorials/subfir1_gbif.qmd
+          text: Subalpine fir (GBIF)
+        - href: tutorials/subfir2_raster.qmd
+          text: Subalpine fir (raster)
+        - href: tutorials/subfir3_covars.qmd
+          text: Subalpine fir (covars)
+      - href: resources.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true

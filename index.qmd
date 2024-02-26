@@ -1,0 +1,42 @@
+### Quantitative Skills for Conservation Scientists
+
+- https://docs.google.com/document/d/1kloZEdbjhJQ52IhjIwZva8ApS4JgS1xAtxB4Kw8mMcs/edit
+
+Objectives: Learn quantitative skills to conduct a fully replicable analysis
+
+- Git and Github
+- Markdown
+- R and/or Python
+- Shiny apps
+- Storymaps
+
+The resources within these pages will help you to:
+
+- Create an individual Github repository to host your code and data and enable others to review and replicate your analysis
+- Conduct a complete analysis using your own dataset(s)
+- Create a group Github repository to organize useful resources e.g., bookmarks, online tutorials, tips, etc.
+
+**Schedule:**
+
+Week 1 (2024-01-29)
+
+- Individual and group objectives
+- Create a provisional schedule
+- Install R/RStudio, Python/RStudio, or Colab
+- Create an account on Github and install git and GitHub Desktop
+- https://rverse-tutorials.github.io/RWorkflow-NWFSC-2022/week1-introtogit.html 
+
+Week 2 (2024-02-05)
+
+- Zach to present his project
+- Maegan to present his project
+= Subalpine fir tutorial - part 1 
+
+Week 3 (2024-02-12)
+
+- Cloning the “coding” repo
+- Subalpine fir tutorial - part 2
+- Gabriel to present his project
+
+Week 4 (2024-02-26)
+
