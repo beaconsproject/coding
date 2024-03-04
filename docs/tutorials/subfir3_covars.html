@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Coding Resources - Subalpine fir - extracting covariates</title>
+<title>Coding Resources - Subalpine fir distribution - Part 3</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -154,6 +154,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../tutorials/subfir3_covars.html">
  <span class="dropdown-text">Subalpine fir (covars)</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../tutorials/subfir4_model.html">
+ <span class="dropdown-text">Subalpine fir (model)</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item">
@@ -189,7 +193,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#map-bioclimate-values-at-points" id="toc-map-bioclimate-values-at-points" class="nav-link" data-scroll-target="#map-bioclimate-values-at-points">Map bioclimate values at points</a></li>
   <li><a href="#map-bioclimate-raster-with-presenceabsence" id="toc-map-bioclimate-raster-with-presenceabsence" class="nav-link" data-scroll-target="#map-bioclimate-raster-with-presenceabsence">Map bioclimate raster with presence/absence</a></li>
   <li><a href="#split-sample-into-training-and-testing" id="toc-split-sample-into-training-and-testing" class="nav-link" data-scroll-target="#split-sample-into-training-and-testing">Split sample into training and testing</a></li>
-  <li><a href="#comparing-presence-absence-density-plots-for-covariates" id="toc-comparing-presence-absence-density-plots-for-covariates" class="nav-link" data-scroll-target="#comparing-presence-absence-density-plots-for-covariates">Comparing presence-absence density plots for covariates</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -199,7 +202,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Subalpine fir - extracting covariates</h1>
+<h1 class="title">Subalpine fir distribution - Part 3</h1>
 <p class="subtitle lead">Pierre Vernier (2024-02-26)</p>
 </div>
 
@@ -257,20 +260,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="download-and-prepare-bioclimate-data" class="level3">
 <h3 class="anchored" data-anchor-id="download-and-prepare-bioclimate-data">Download and prepare bioclimate data</h3>
-<p>We will use the <code>worldclim_tile</code> function in the <code>geodata</code> package to download a standard set of 19 bioclimatic variables from the Worlclim website (https://worldclim.org/data/worldclim21.html). We will select the highest resolution data available (~1 km2) representing an average for the years 1970-2000 (climate normal). AdaptWest (https://adaptwest.databasin.org/pages/adaptwest-climatena/) also provides a similar set of datasets, the disadvantage being that they have to be downloaded manually.</p>
+<p>We will use the <code>worldclim_tile</code> function in the <code>geodata</code> package to download a standard set of 19 bioclimatic variables from the <a href="https://worldclim.org/data/worldclim21.html">Worlclim website</a>. We will select the highest resolution data available (~1 km2) representing an average for the years 1970-2000 (climate normal). <a href="https://adaptwest.databasin.org/pages/adaptwest-climatena/">AdaptWest</a> also provides a similar set of datasets, the disadvantage being that they have to be downloaded manually.</p>
 <p>The KDTT study area requires that I download two tiles of data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>bnd4326 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(bnd, <span class="dv">4326</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Uncomment next 2 lines to download climate data from Worlclim</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#d1 &lt;- worldclim_tile(var='bio', lon=-128, lat=59, path='tmp')</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#d2 &lt;- worldclim_tile(var='bio', lon=-128, lat=61, path='tmp')</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> <span class="fu">worldclim_tile</span>(<span class="at">var=</span><span class="st">'bio'</span>, <span class="at">lon=</span><span class="sc">-</span><span class="dv">128</span>, <span class="at">lat=</span><span class="dv">59</span>, <span class="at">path=</span><span class="st">'../data_raw/tmp'</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> <span class="fu">worldclim_tile</span>(<span class="at">var=</span><span class="st">'bio'</span>, <span class="at">lon=</span><span class="sc">-</span><span class="dv">128</span>, <span class="at">lat=</span><span class="dv">61</span>, <span class="at">path=</span><span class="st">'../data_raw/tmp'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="read-and-rename-raster-layers" class="level3">
 <h3 class="anchored" data-anchor-id="read-and-rename-raster-layers">Read and rename raster layers</h3>
 <p>Once downloaded, we rename the 19 rasters to bio1-bio19.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">'data_raw/tile_14_wc2.1_30s_bio.tif'</span>)</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">'../data_raw/tile_14_wc2.1_30s_bio.tif'</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(t1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "tile_14_wc2.1_30s_bio_1"  "tile_14_wc2.1_30s_bio_2" 
@@ -291,7 +294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 [10] "bio18" "bio19" "bio2"  "bio3"  "bio4"  "bio5"  "bio6"  "bio7"  "bio8" 
 [19] "bio9" </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">'data_raw/tile_2_wc2.1_30s_bio.tif'</span>)</span>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">rast</span>(<span class="st">'../data_raw/tile_2_wc2.1_30s_bio.tif'</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(t2) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"bio"</span>, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span><span class="sc">:</span><span class="dv">19</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">9</span>))</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -330,6 +333,7 @@ max values  :   0.81250, 15.533333, -12.4,   829,   133,    36, ... </code></pre
 <h3 class="anchored" data-anchor-id="view-some-of-the-merged-raster-layers">View some of the merged raster layers</h3>
 <p>We will take a look at two of the layers, temperature and precipitation.</p>
 <p><strong>Temperature</strong></p>
+<p>bio5 = Max Temperature of Warmest Month</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pal <span class="ot">&lt;-</span> <span class="fu">get_brewer_pal</span>(<span class="st">"-RdYlBu"</span>, <span class="at">n=</span><span class="dv">5</span>, <span class="at">plot=</span><span class="cn">FALSE</span>)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_basemap</span>(<span class="at">server =</span> <span class="fu">c</span>(<span class="st">"Esri.WorldTopoMap"</span>)) <span class="sc">+</span></span>
@@ -346,9 +350,10 @@ max values  :   0.81250, 15.533333, -12.4,   829,   133,    36, ... </code></pre
 </div>
 </div>
 <p><strong>Precipitation</strong></p>
+<p>bio13 = Precipitation of Wettest Month</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_basemap</span>(<span class="at">server =</span> <span class="fu">c</span>(<span class="st">"Esri.WorldTopoMap"</span>)) <span class="sc">+</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(tt[[<span class="st">"bio13"</span>]]) <span class="sc">+</span> <span class="fu">tm_raster</span>(<span class="at">col.scale=</span><span class="fu">tm_scale_intervals</span>(<span class="at">n=</span><span class="dv">5</span>, <span class="at">style=</span><span class="st">"pretty"</span>, <span class="at">values=</span><span class="st">"Blues"</span>), </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(tt[[<span class="st">"bio13"</span>]]) <span class="sc">+</span> <span class="fu">tm_raster</span>(<span class="at">col.scale=</span><span class="fu">tm_scale_intervals</span>(<span class="at">n=</span><span class="dv">5</span>, <span class="at">style=</span><span class="st">"quantile"</span>, <span class="at">values=</span><span class="st">"Blues"</span>), </span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Precipitation (mm)"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>)),</span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_alpha=</span><span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(bnd4326) <span class="sc">+</span> <span class="fu">tm_polygons</span>(<span class="at">fill_alpha=</span><span class="dv">0</span>, <span class="at">col=</span><span class="st">"black"</span>, <span class="at">lwd=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -426,50 +431,40 @@ First 10 features:
 <section id="map-bioclimate-values-at-points" class="level3">
 <h3 class="anchored" data-anchor-id="map-bioclimate-values-at-points">Map bioclimate values at points</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_basemap</span>(<span class="at">server =</span> <span class="fu">c</span>(<span class="st">"Esri.WorldTopoMap"</span>)) <span class="sc">+</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(bnd4326) <span class="sc">+</span> <span class="fu">tm_polygons</span>(<span class="at">fill_alpha=</span><span class="dv">0</span>, <span class="at">col=</span><span class="st">"black"</span>, <span class="at">lwd=</span><span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(abla_pts_bio) <span class="sc">+</span> <span class="fu">tm_dots</span>(<span class="at">fill=</span><span class="st">'bio3'</span>, <span class="at">size=</span><span class="fl">0.3</span>,</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Subalpine Fir"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"right"</span>, <span class="st">"top"</span>))) <span class="sc">+</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">legend.text.size =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="subfir3_covars_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"view"</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_basemap</span>(<span class="at">server =</span> <span class="fu">c</span>(<span class="st">"Esri.WorldTopoMap"</span>)) <span class="sc">+</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(bnd4326) <span class="sc">+</span> <span class="fu">tm_polygons</span>(<span class="at">fill_alpha=</span><span class="dv">0</span>, <span class="at">col=</span><span class="st">"black"</span>, <span class="at">lwd=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(abla_pts_bio) <span class="sc">+</span> <span class="fu">tm_dots</span>(<span class="at">fill=</span><span class="st">'bio3'</span>, <span class="at">size=</span><span class="fl">0.3</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Precipitation (mm)"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"right"</span>, <span class="st">"top"</span>))) <span class="sc">+</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">legend.text.size =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="map-bioclimate-raster-with-presenceabsence" class="level3">
 <h3 class="anchored" data-anchor-id="map-bioclimate-raster-with-presenceabsence">Map bioclimate raster with presence/absence</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_basemap</span>(<span class="at">server =</span> <span class="fu">c</span>(<span class="st">"Esri.WorldTopoMap"</span>)) <span class="sc">+</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(tt[[<span class="st">"bio13"</span>]]) <span class="sc">+</span> <span class="fu">tm_raster</span>(<span class="at">col.scale=</span><span class="fu">tm_scale_intervals</span>(<span class="at">n=</span><span class="dv">5</span>, <span class="at">style=</span><span class="st">"pretty"</span>, <span class="at">values=</span><span class="st">"Blues"</span>), </span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Precipitation (mm)"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>)),</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_alpha=</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(bnd4326) <span class="sc">+</span> <span class="fu">tm_polygons</span>(<span class="at">fill_alpha=</span><span class="dv">0</span>, <span class="at">col=</span><span class="st">"black"</span>, <span class="at">lwd=</span><span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(abla_pts_bio) <span class="sc">+</span> <span class="fu">tm_dots</span>(<span class="at">fill=</span><span class="st">'PresenceAbsence'</span>, <span class="at">size=</span><span class="fl">0.3</span>,</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Subalpine Fir"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"right"</span>, <span class="st">"top"</span>))) <span class="sc">+</span></span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">legend.text.size =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="subfir3_covars_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"view"</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_basemap</span>(<span class="at">server =</span> <span class="fu">c</span>(<span class="st">"Esri.WorldTopoMap"</span>)) <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(tt[[<span class="st">"bio13"</span>]]) <span class="sc">+</span> <span class="fu">tm_raster</span>(<span class="at">col.scale=</span><span class="fu">tm_scale_intervals</span>(<span class="at">n=</span><span class="dv">5</span>, <span class="at">style=</span><span class="st">"pretty"</span>, <span class="at">values=</span><span class="st">"Blues"</span>), </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Precipitation (mm)"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"left"</span>, <span class="st">"bottom"</span>)),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_alpha=</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(bnd4326) <span class="sc">+</span> <span class="fu">tm_polygons</span>(<span class="at">fill_alpha=</span><span class="dv">0</span>, <span class="at">col=</span><span class="st">"black"</span>, <span class="at">lwd=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(abla_pts_bio) <span class="sc">+</span> <span class="fu">tm_dots</span>(<span class="at">fill=</span><span class="st">'PresenceAbsence'</span>, <span class="at">size=</span><span class="fl">0.3</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill.legend =</span> <span class="fu">tm_legend</span>(<span class="at">title =</span> <span class="st">"Subalpine Fir"</span>, <span class="at">position =</span> <span class="fu">tm_pos_in</span>(<span class="st">"right"</span>, <span class="st">"top"</span>))) <span class="sc">+</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">legend.text.size =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="split-sample-into-training-and-testing" class="level3">
 <h3 class="anchored" data-anchor-id="split-sample-into-training-and-testing">Split sample into training and testing</h3>
-<p>Prior to developing a model, we split the data into a training (70%) and testing set (30%). Other splits or even multiple splits can be used.</p>
+<p>Prior to developing a model, we split the data into a training (70%) and testing set (30%). Other splits or even multiple splits can be used. Next week we will use the training set to develop a simple model predicting subalpine fir occurrence. We will then use the holdout data or testing set to assess the predictive accuracy of the model.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set.seed(123)</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>abla_train <span class="ot">&lt;-</span> abla_bio <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>abla_train <span class="ot">&lt;-</span> abla_pts_bio <span class="sc">%&gt;%</span></span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_frac</span>(<span class="at">size =</span> <span class="fl">0.7</span>)</span>
 <span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(abla_train<span class="sc">$</span>PresenceAbsence)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt; table of extent 0 &gt;</code></pre>
+<pre><code>
+ Absent Present 
+    702     674 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>abla_val <span class="ot">&lt;-</span> abla_bio <span class="sc">%&gt;%</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(abla_train, <span class="at">by =</span> <span class="st">"ID"</span>)</span>
@@ -478,9 +473,6 @@ First 10 features:
 <pre><code>&lt; table of extent 0 &gt;</code></pre>
 </div>
 </div>
-</section>
-<section id="comparing-presence-absence-density-plots-for-covariates" class="level3">
-<h3 class="anchored" data-anchor-id="comparing-presence-absence-density-plots-for-covariates">Comparing presence-absence density plots for covariates</h3>
 
 
 </section>

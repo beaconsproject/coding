@@ -1,5 +1,5 @@
 ---
-title: "Subalpine fir - extracting covariates"
+title: "Subalpine fir distribution - Part 3"
 subtitle: "Pierre Vernier (2024-02-26)"
 format: html
 toc: true
@@ -9,9 +9,9 @@ toc: true
 
 Objectives:
 
-1. Download bioclimate data (tiles) from Worldclim
-2. Clip the tiles to KDTT study area
-3. Extract bioclimate data using random subalpine fir location
+1.  Download bioclimate data (tiles) from Worldclim
+2.  Clip the tiles to KDTT study area
+3.  Extract bioclimate data using random subalpine fir location
 
 ## Methods
 
@@ -41,17 +41,17 @@ tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
 
 ### Download and prepare bioclimate data
 
-We will use the `worldclim_tile` function in the `geodata` package to download a standard set of 19 bioclimatic variables from the Worlclim website (https://worldclim.org/data/worldclim21.html). We will select the highest resolution data available (~1 km2) representing an average for the years 1970-2000 (climate normal). AdaptWest (https://adaptwest.databasin.org/pages/adaptwest-climatena/) also provides a similar set of datasets, the disadvantage being that they have to be downloaded manually.
+We will use the `worldclim_tile` function in the `geodata` package to download a standard set of 19 bioclimatic variables from the [Worlclim website](https://worldclim.org/data/worldclim21.html). We will select the highest resolution data available (\~1 km2) representing an average for the years 1970-2000 (climate normal). [AdaptWest](https://adaptwest.databasin.org/pages/adaptwest-climatena/) also provides a similar set of datasets, the disadvantage being that they have to be downloaded manually.
 
-The KDTT study area requires that I download two tiles of data. 
+The KDTT study area requires that I download two tiles of data.
 
 ```{r}
 #| message: FALSE
 #| warning: FALSE
 bnd4326 <- st_transform(bnd, 4326)
 # Uncomment next 2 lines to download climate data from Worlclim
-#d1 <- worldclim_tile(var='bio', lon=-128, lat=59, path='tmp')
-#d2 <- worldclim_tile(var='bio', lon=-128, lat=61, path='tmp')
+d1 <- worldclim_tile(var='bio', lon=-128, lat=59, path='../data_raw/tmp')
+d2 <- worldclim_tile(var='bio', lon=-128, lat=61, path='../data_raw/tmp')
 ```
 
 ### Read and rename raster layers
@@ -61,11 +61,11 @@ Once downloaded, we rename the 19 rasters to bio1-bio19.
 ```{r}
 #| message: FALSE
 #| warning: FALSE
-t1 <- rast('data_raw/tile_14_wc2.1_30s_bio.tif')
+t1 <- rast('../data_raw/tile_14_wc2.1_30s_bio.tif')
 names(t1)
 names(t1) <- paste0("bio", c(1, 10:19, 2:9))
 names(t1)
-t2 <- rast('data_raw/tile_2_wc2.1_30s_bio.tif')
+t2 <- rast('../data_raw/tile_2_wc2.1_30s_bio.tif')
 names(t2) <- paste0("bio", c(1, 10:19, 2:9))
 names(t2)
 ```
@@ -92,6 +92,8 @@ We will take a look at two of the layers, temperature and precipitation.
 
 **Temperature**
 
+bio5 = Max Temperature of Warmest Month
+
 ```{r}
 #| message: FALSE
 #| warning: FALSE
@@ -105,11 +107,13 @@ tm_shape(tt[["bio5"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pret
 
 **Precipitation**
 
+bio13 = Precipitation of Wettest Month
+
 ```{r}
 #| message: FALSE
 #| warning: FALSE
 tm_basemap(server = c("Esri.WorldTopoMap")) +
-tm_shape(tt[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pretty", values="Blues"), 
+tm_shape(tt[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="quantile", values="Blues"), 
     col.legend = tm_legend(title = "Precipitation (mm)", position = tm_pos_in("left", "bottom")),
     col_alpha=1) +
   tm_shape(bnd4326) + tm_polygons(fill_alpha=0, col="black", lwd=2)
@@ -134,10 +138,11 @@ abla_pts_bio
 ```{r}
 #| message: FALSE
 #| warning: FALSE
+tmap_mode("view")
 tm_basemap(server = c("Esri.WorldTopoMap")) +
 tm_shape(bnd4326) + tm_polygons(fill_alpha=0, col="black", lwd=2) +
   tm_shape(abla_pts_bio) + tm_dots(fill='bio3', size=0.3,
-    fill.legend = tm_legend(title = "Subalpine Fir", position = tm_pos_in("right", "top"))) +
+    fill.legend = tm_legend(title = "Precipitation (mm)", position = tm_pos_in("right", "top"))) +
   tm_layout(legend.text.size = 0.8)
 ```
 
@@ -146,6 +151,7 @@ tm_shape(bnd4326) + tm_polygons(fill_alpha=0, col="black", lwd=2) +
 ```{r}
 #| message: FALSE
 #| warning: FALSE
+tmap_mode("view")
 tm_basemap(server = c("Esri.WorldTopoMap")) +
 tm_shape(tt[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pretty", values="Blues"), 
     col.legend = tm_legend(title = "Precipitation (mm)", position = tm_pos_in("left", "bottom")),
@@ -158,11 +164,11 @@ tm_shape(tt[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pre
 
 ### Split sample into training and testing
 
-Prior to developing a model, we split the data into a training (70%) and testing set (30%). Other splits or even multiple splits can be used.
+Prior to developing a model, we split the data into a training (70%) and testing set (30%). Other splits or even multiple splits can be used. Next week we will use the training set to develop a simple model predicting subalpine fir occurrence. We will then use the holdout data or testing set to assess the predictive accuracy of the model.
 
 ```{R}
 #set.seed(123)
-abla_train <- abla_bio %>%
+abla_train <- abla_pts_bio %>%
   sample_frac(size = 0.7)
 table(abla_train$PresenceAbsence)
 abla_val <- abla_bio %>%
@@ -170,4 +176,3 @@ abla_val <- abla_bio %>%
 table(abla_val$PresenceAbsence)
 ```
 
-### Comparing presence-absence density plots for covariates

@@ -16,5 +16,14 @@
   },
   "resources.qmd": {
     "resources.html": "12d99bb5"
+  },
+  "tutorials/subfir4_model.qmd": {
+    "subfir4_model.html": "30ed9df6"
+  },
+  "tutorials/occurrence.qmd": {
+    "occurrence.html": "dacc1c18"
+  },
+  "tutorials/subfir5_proj.qmd": {
+    "subfir5_proj.html": "e2557c2f"
   }
 }

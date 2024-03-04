@@ -21,6 +21,8 @@ website:
           text: Subalpine fir (raster)
         - href: tutorials/subfir3_covars.qmd
           text: Subalpine fir (covars)
+        - href: tutorials/subfir4_model.qmd
+          text: Subalpine fir (model)
       - href: resources.qmd
 
 format:
