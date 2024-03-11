@@ -13,16 +13,12 @@ website:
         menu:
         - href: tips/github.qmd
           text: Installing git & github
+        - href: tips/species_data.qmd
+          text: Acquiring species data
       - text: "Tutorials"
         menu:
-        - href: tutorials/subfir1_gbif.qmd
-          text: Subalpine fir (GBIF)
-        - href: tutorials/subfir2_raster.qmd
-          text: Subalpine fir (raster)
-        - href: tutorials/subfir3_covars.qmd
-          text: Subalpine fir (covars)
-        - href: tutorials/subfir4_model.qmd
-          text: Subalpine fir (model)
+        - href: tutorials/occurrence.qmd
+          text: Species distribution modelling
       - href: resources.qmd
 
 format:

@@ -25,5 +25,14 @@
   },
   "tutorials/subfir5_proj.qmd": {
     "subfir5_proj.html": "e2557c2f"
+  },
+  "tutorials/tmp.qmd": {
+    "tmp.html": "62b9ae37"
+  },
+  "tutorials/occurrence2.qmd": {
+    "occurrence2.html": "ea3a07a5"
+  },
+  "tips/species_data.qmd": {
+    "species_data.html": "b955c812"
   }
 }

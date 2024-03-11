@@ -1,15 +1,17 @@
 ---
-title: "Subalpine fir distribution - Part 1"
-subtitle: "Pierre Vernier (2024-02-05)"
+title: "Species distribution modelling"
+subtitle: "Pierre Vernier (2024-03-11)"
 format: html
 toc: true
 ---
 
-# Objectives
+## Introduction
 
-- To read and view a map of your study area
-- To download species data from GBIF
-- To map the distribution of species in your study area
+This is a five part minimalist tutorial on modelling the current and future distribution of subalpine fir in the southeast Yukon and northcentral BC.
+
+First, we're going to load a bunch of packages that will be used throughout the tutorial.
+
+### Install required packages
 
 You will first need to make sure you have the R packages listed below, otherwise you will need to install them using the `install.packages` function:
 
@@ -18,20 +20,40 @@ You will first need to make sure you have the R packages listed below, otherwise
 #install.packages(c('sf', 'tmap', 'dplyr', 'terra', 'tmaptools', 'geodata', 'mapview'))
 ```
 
+### Load required packages
 
 ```{r}
+#| message: FALSE
+#| warning: FALSE
+# Load required packages
 library(sf)
 library(tmap)
-library(dplyr)
+library(ROCR)
+library(dismo)
 library(terra)
-library(tmaptools)
 library(geodata)
+library(ggplot2)
 library(mapview)
+library(tmaptools)
+library(tidyverse)
+source('rasterdf.R')
 ```
 
-# Study area
+################################################################################
 
-The example study area is the Kaska Dene Traditional Territory.
+## Part 1 - Subalpine fir data
+
+In part 1 of the tutorial, we will download (subalpine fir) species occurrence data from GBIF and plot it on our study area.
+
+Objectives:
+
+- To read and view a map of your study area
+- To download species data from GBIF
+- To map the distribution of species in your study area
+
+### Study area
+
+Our example study area is the Kaska Dene Traditional Territory that spans southeast Yukon and northcentral BC. We use the `st_read` function from the **sf** package to read the boundary layer from a geopackage file called kdtt.gpkg. We then use the generic `plot` function to view our study area boundary.
 
 ```{r}
 bnd <- st_read('data/kdtt.gpkg', 'bnd', quiet=TRUE)
@@ -40,19 +62,23 @@ plot(bnd)
 
 ### Plot geometry only
 
+The `plot` function plots all attributes including the polygon geometry. To view only the outline of the study area we have to wrap the bnd object inside the `st_geometry` function.
+
 ```{r}
 plot(st_geometry(bnd))
 ```
 
-
 ### Plot using the `tmap` package
 
+A more flexible approach is to use the **tmap* package.
+
 ```{r}
-tmap_mode("plot")
 tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
 ```
 
 ### Add a basemap
+
+We can add a basemap to provide more context.
 
 ```{r}
 tm_basemap(server = "Esri.WorldTopoMap") +
@@ -61,13 +87,15 @@ tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
 
 ### View interactive map
 
+Another useful package is the **mapview** package. It is very useful for viewing an interactive plot of your data i.e., where you can zoom in and out and turn layers on and off.
+
 ```{r}
 mapview(bnd)
 ```
 
-# Distribution data
+### Distribution data
 
-Since I don't have any of my own data, I will try to acquire existing subalpine fir location data. Sources of species distribution data include the Global Biodiversity Information Facility (GBIF). The `geodata` includes a function to download data from GBIF.
+Since we don't have any of our own data, we will try to acquire existing subalpine fir location data. Sources of species distribution data include the Global Biodiversity Information Facility (GBIF). The `geodata` includes a function to download data from GBIF. The comments in the code below describe the steps to download the data.
 
 ```{r}
 
@@ -81,13 +109,16 @@ bnd100 <- st_buffer(bnd, 100000)
 # Download GBIF data and convert to sf point object
 g <- sp_occurrence(genus, species, geo=TRUE, end=2500)
 
-gg <- select(g, lon, lat, year) %>%
-  st_as_sf(coords = c("lon", "lat"), crs=4326) %>%
+# Select a subset of attributes and convert to an sf object
+gg <- select(g, lon, lat, year) |>
+  st_as_sf(coords = c("lon", "lat"), crs=4326) |>
   st_transform(3578)
 gg
 ```
 
-### Map download points
+### Map downloaded points
+
+Now we can view our downloaded data.
 
 ```{r}
 mapview(bnd100, alpha.regions=0, lwd=1) + 
@@ -97,6 +128,8 @@ mapview(bnd100, alpha.regions=0, lwd=1) +
 
 ### Select subset of data
 
+The data we acquired from GBIF goes way beyond our study area. We will select only locations that fall within 100 km of our study area.
+
 ```{r}
 # Select points that are within the buffered study region
 gg_sub <- gg[bnd100,]
@@ -104,6 +137,8 @@ gg_sub
 ```
 
 ### Plot subalpine fir locations
+
+Now we use the **tmap** package to plot the distribution of subalpine fir locations along with the study area boundary.
 
 ```{r}
 # Plot AOI + points
@@ -115,6 +150,8 @@ tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2) +
 
 ### Plot subalpine fir locations (interactive)
 
+We can do the same using the **mapview** package.
+
 ```{r}
 library(mapview)
 mapview(bnd100, alpha.regions=0, lwd=1) + 
@@ -122,30 +159,19 @@ mapview(bnd100, alpha.regions=0, lwd=1) +
   mapview(gg_sub, cex=4, col='red', col.regions='red', legend=NULL)
 ```
 
-####################################################################################################
+################################################################################
 
-# Subalpine fir distribution - Part 2
+# Part 2 - Tree species raster
 
-# Objectives
+In part 2 of the tutorial, we will sample presence and absence locations from a 30-m tree species raster for Canada (ref).
 
-- To read and view a map of your study area
-- To download species data from GBIF
-- To map the distribution of species in your study area
+Objectives:
 
-# Study area
+- To create a tree species raster map
+- To extract random presence/absence location from the raster
+- To create a map of the raster and location data
 
-```{r}
-#| message: FALSE
-#| warning: FALSE
-bnd <- st_read('data/kdtt.gpkg', 'bnd', quiet=TRUE)
-tmap_mode("plot")
-tm_basemap(server = c("Esri.WorldTopoMap", "Esri.WorldImagery")) +
-tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
-```
-
-# Distribution data
-
-## Clip tree raster data to study area
+### Clip tree raster data to study area
 
 ```{r}
 #| message: FALSE
@@ -168,7 +194,7 @@ spp <- tibble(code=c(0,3,10,16,17,18,23,29), # these are the species codes in th
 spp
 ```
 
-## Reclassify tree species map to subalpine fir = 1 and everything else = 0
+### Reclassify tree species map to subalpine fir = 1 and everything else = 0
 
 ```{r}
 #| message: FALSE
@@ -177,7 +203,7 @@ r_abla <- classify(trees, rbind(c(-1,2,0),  c(2,3,1), c(4,30,0)))
 plot(r_abla)
 ```
 
-## Create subalpine fir datasets using random sample of pixels
+### Random sample of tree pixels
 
 To do this we're going to randomly sample around 1000 subalpine fir pixels and 1000 non subalpine fir pixels. We first set a random number seed so that we can replicate the sample. Without setting a seed, you would get a different random sample each time you ran the code segment. This could be useful if you wanted to generate a few hundred or few thousand samples in order to get a distribution of random samples.  
 
@@ -195,6 +221,7 @@ abla
 ```
 
 The new variable is called "b1" and contains values of 0 (absent) and 1 (present). We'll rename it to "Occurrence" and create a second variable with character values "present" and "absent".
+
 ```{r}
 #| message: FALSE
 #| warning: FALSE
@@ -210,6 +237,8 @@ st_write(abla, 'data/kdtt.gpkg', 'abla', delete_layer=T)
 
 ## Map presence-absence of subalpine fir
 
+Let's view the results as a static map.
+
 ```{r}
 #| message: FALSE
 #| warning: FALSE
@@ -222,16 +251,7 @@ tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2) +
 
 ## Map presence-absence (interactive mode)
 
-```{r}
-#| message: FALSE
-#| warning: FALSE
-tmap_mode("plot")
-tm_basemap(server = c("Esri.WorldTopoMap", "Esri.WorldImagery")) +
-  tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2) +
-    tm_shape(abla) + tm_dots(fill='PresenceAbsence', size=0.3,
-    fill.legend = tm_legend(title = "Subalpine Fir", position = tm_pos_in("right", "top"))) +
-    tm_layout(legend.text.size = 0.8)
-```
+Again, as an interactive map.
 
 ```{r}
 #| message: FALSE
@@ -241,28 +261,17 @@ mapview(bnd, alpha.regions=0, lwd=2) +
   mapview(abla, zcol='PresenceAbsence', col.regions=c('red','blue'), cex=2)
 ```
 
-####################################################################################################
+################################################################################
 
-## Introduction
+# Part 3 - Predictor variables
+
+In part 3 of the tutorial, we will download bioclimatic data for Worldclim, prepare them for analysis, and take a look at a few maps. This data will be used, in part 4, as covariates to develop species distribution model for subalpine fir.
 
 Objectives:
 
 1.  Download bioclimate data (tiles) from Worldclim
 2.  Clip the tiles to KDTT study area
 3.  Extract bioclimate data using random subalpine fir location
-
-## Methods
-
-
-### View study area
-
-```{r}
-#| message: FALSE
-#| warning: FALSE
-bnd <- st_read('data/kdtt.gpkg', 'bnd', quiet=TRUE)
-tm_basemap(server = c("Esri.WorldTopoMap")) +
-tm_shape(bnd) + tm_polygons(color='black', fill_alpha=0, lwd=2)
-```
 
 ### Download and prepare bioclimate data
 
@@ -351,9 +360,9 @@ We can now extract the bioclimate data using our random presence-absence points 
 ```{r}
 #| message: FALSE
 #| warning: FALSE
-abla_pts <- st_read('data/kdtt.gpkg', 'abla') %>%
+abla_pts <- st_read('data/kdtt.gpkg', 'abla') |>
   st_transform(4326)
-abla_bio <- extract(tt, vect(abla_pts))
+abla_bio <- terra::extract(tt, vect(abla_pts))
 abla_pts_bio <- bind_cols(abla_pts, abla_bio)
 abla_pts_bio
 ```
@@ -363,7 +372,6 @@ abla_pts_bio
 ```{r}
 #| message: FALSE
 #| warning: FALSE
-tmap_mode("view")
 tm_basemap(server = c("Esri.WorldTopoMap")) +
 tm_shape(bnd4326) + tm_polygons(fill_alpha=0, col="black", lwd=2) +
   tm_shape(abla_pts_bio) + tm_dots(fill='bio3', size=0.3,
@@ -376,7 +384,6 @@ tm_shape(bnd4326) + tm_polygons(fill_alpha=0, col="black", lwd=2) +
 ```{r}
 #| message: FALSE
 #| warning: FALSE
-tmap_mode("view")
 tm_basemap(server = c("Esri.WorldTopoMap")) +
 tm_shape(tt[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pretty", values="Blues"), 
     col.legend = tm_legend(title = "Precipitation (mm)", position = tm_pos_in("left", "bottom")),
@@ -387,17 +394,444 @@ tm_shape(tt[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pre
   tm_layout(legend.text.size = 0.8)
 ```
 
+################################################################################
+
+# Part 4 - Current distribution
+
+Objectives:
+
+1.  Extract bioclimatic data using random subalpine fir location
+2.  Model relationship between subalpine fir and bioclimatic variables
+3.  Map predicted probability of occurrence of subalpine fir
+4.  Evaluate the accuracy of the model
+
+### Extract bioclimate data using points
+
+We can now extract the bioclimate data using our random presence-absence points for subalpine fir. We first read the subalpine fir random presence/absence file that we created last time. We use that file to extract the 19 bioclimate variable values at each point. Finally, we merge them back to the points file.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+bnd <- st_read('data/kdtt.gpkg', 'bnd', quiet=TRUE)
+bio <- rast('data/bio.tif')
+abla <- st_read('data/kdtt.gpkg', 'abla', quiet=TRUE) |>
+  st_transform(4326)
+abla_bio <- terra::extract(bio, abla) |>
+  bind_cols(abla) |>
+  mutate(PresenceAbsence=NULL) |>
+  rename(abla=Occurrence) |>
+  as.data.frame()
+names(abla_bio)
+head(abla_bio)
+abla_bio_3578 <- st_transform(st_as_sf(abla_bio), 3578)
+st_write(abla_bio_3578, 'data/kdtt.gpkg', 'bio', delete_layer=T)
+```
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+#tm_basemap(server = c("Esri.WorldTopoMap")) +
+tm_shape(bio[["bio13"]]) + tm_raster(col.scale=tm_scale_intervals(n=5, style="pretty", values="Blues"), 
+    col.legend = tm_legend(title = "Precipitation (mm)", position = tm_pos_in("left", "bottom")),
+    col_alpha=1) +
+  tm_shape(bnd) + tm_polygons(fill_alpha=0, col="black", lwd=2) +
+  tm_shape(abla) + tm_dots(fill='PresenceAbsence', size=0.2,
+    fill.legend = tm_legend(title = "Subalpine Fir", position = tm_pos_in("right", "top"))) +
+  tm_layout(legend.text.size = 0.8)
+```
+
 ### Split sample into training and testing
 
 Prior to developing a model, we split the data into a training (70%) and testing set (30%). Other splits or even multiple splits can be used. Next week we will use the training set to develop a simple model predicting subalpine fir occurrence. We will then use the holdout data or testing set to assess the predictive accuracy of the model.
 
-```{R}
-#set.seed(123)
-abla_train <- abla_pts_bio %>%
+```{r}
+#| message: FALSE
+#| warning: FALSE
+set.seed(123)
+abla_train <- abla_bio |>
   sample_frac(size = 0.7)
-table(abla_train$PresenceAbsence)
-abla_val <- abla_bio %>%
+cat("Training data (70%):\n")
+table(abla_train$abla)
+abla_val <- abla_bio |>
   anti_join(abla_train, by = "ID")
-table(abla_val$PresenceAbsence)
+cat("\n\nTesting data (30%):\n")
+table(abla_val$abla)
 ```
 
+## Develop model
+
+Now, we're going to use our training data to develop a boosted regression tree model. You can easily find details about this type of model online and, eventually, in the resources pages of this coding website. The model will attempt to predict the probability of occurrence of subalpine fir as a function of one or more bioclimatic variable.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_mod <- gbm.step(data = abla_train, # data used to train model
+                     gbm.x = 2:20, # predictor variables
+                     gbm.y = 21, # response variable
+                     family = "bernoulli", # bernoulli is appropriate for occurrence data
+                     tree.complexity = 3,
+                     learning.rate = 0.01, 
+                     bag.fraction = 0.5,
+                     plot.main = FALSE, 
+                     verbose = FALSE, 
+                     silent = TRUE)
+#saveRDS(abla_mod, 'data/abla_mod.rda')
+abla_imp <- summary(abla_mod, plotit = FALSE)
+summary(abla_mod)
+```
+
+Top four variables:
+
+- bio14 - Precipitation of Driest Month
+- bio2 - Mean Diurnal Range (Mean of monthly max temp - min temp)
+- bio11 - Mean Temperature of Coldest Quarter
+- bio15 - Precipitation Seasonality (Coefficient of Variation)
+
+### Diagnostic plot
+
+Partial residual plots show the nonparametric relationships between subalpine fir occurrence and the predictor variables. They can be generated using the gbm.plot() function from the `dismo` package. Here, the partial plots for the four most important predictors are shown in a 2 x 2 layout.
+
+Over the range of temperatures in the study area, subalpine fir probability of occurrence:
+
+- is highest at lowest precipitation and declines monotonically when CV>1100 (bio14)
+- is highest when mean diurnal range is between 8-11 degrees (bio2)
+- is highest when bio11 is greater than 100 cm (bio11)
+- is highest when bio15 is between 16-18 degrees (bio15)
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+gbm.plot(abla_mod, 
+         n.plots = 4, 
+         write.title = FALSE,
+         plot.layout = c(2, 2))
+```
+
+### Predict values at all pixels
+
+We can now use our model to predict the probability of occurrence of subalpine fir at all locations in our study area using the `predict` function in the `dismo` package.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_cur <- predict(object = bio, # bioclimatic variables
+                    model = abla_mod, # model
+                    type = "response", 
+                    na.rm = TRUE)
+writeRaster(abla_cur, 'data/abla_current.tif', overwrite=TRUE)
+```
+
+### Predicted probability map
+
+We can now map the predicted probability of occurrence of subalpine fir across our study area.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+pal <- get_brewer_pal("YlGn", n=5, plot=FALSE)
+tm_basemap(server = c("Esri.WorldTopoMap")) +
+tm_shape(abla_cur) + tm_raster(col.scale=tm_scale_intervals(n=5, style="quantile", values=pal), 
+    col.legend = tm_legend(title = "Subalpine fir", position = tm_pos_in("left", "bottom")),
+    col_alpha=1) +
+  tm_shape(bnd) + tm_polygons(fill_alpha=0, col="black", lwd=2)
+```
+
+### Predicted probability map with subalpine fir
+
+Now, let's see the map with the subalpine fir presence-absence data.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+pal <- get_brewer_pal("YlGn", n=5, plot=FALSE)
+tm_basemap(server = c("Esri.WorldTopoMap")) +
+tm_shape(abla_cur) + tm_raster(col.scale=tm_scale_intervals(n=5, style="quantile", values=pal), 
+    col.legend = tm_legend(title = "Subalpine fir", position = tm_pos_in("left", "bottom")),
+    col_alpha=1) +
+  tm_shape(bnd) + tm_polygons(fill_alpha=0, col="black", lwd=2) +
+  tm_shape(abla) + tm_dots(fill='PresenceAbsence', size=0.2,
+    fill.legend = tm_legend(title = "Subalpine Fir", position = tm_pos_in("right", "top"))) +
+  tm_layout(legend.text.size = 0.8)
+
+```
+
+We can clearly see that most of the absences are located in areas with lower predicted probability of occurrences, while most the presences are in the greener areas.
+
+## Evaluate model
+
+An important step in statistical modelling is to evaluate the accuracy of the models. Ideally, we would use spatially and temporally independent data. However, this is rarely possible or affordable. Instead, we can use our hold-out or testing dataset to evaluate the predictive accuracy of our model. The code below creates a data frame from the observed and predicted data that will be used to calculate and plot a measure of predicted accuracy known as the Area under the receiver operating characteristics (ROC) curve. We can ignore the code for now.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_pred <- predict(abla_mod, 
+                     newdata = abla_val,
+                     type = "response")
+abla_predobs <- prediction(abla_pred, abla_val$abla)
+abla_roc = performance(abla_predobs, 
+                       measure = "tpr", 
+                       x.measure = "fpr")
+abla_fpr <- slot(abla_roc, "x.values")[[1]]
+abla_tpr <- slot(abla_roc, "y.values")[[1]]
+abla_aucplot <- data.frame(abla_fpr, abla_tpr)
+```
+
+### Area under the receiver operating characteristics (ROC) curve
+
+Area under the receiver operating characteristics (ROC) curve for predictions of subalpine fir occurrence based on WorldClim bioclimatic indices. We now use the table of observed and predicted observations to plot the ROC curve. If our model had no predictive capability, the curve would be a diagonal straight line. Curves that increasingly concave indicate higher accuracy. 
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+ggplot(data = abla_aucplot) +
+  geom_line(aes(x = abla_fpr,
+                y = abla_tpr),
+            col = "red") +
+  labs(x = "False Positive Rate", 
+       y = "True Positive Rate") +
+  geom_abline(slope = 1, intercept = 0) +
+  scale_x_continuous(expand = c(0.005, 0)) +
+  scale_y_continuous(expand = c(0.005, 0)) +
+  coord_fixed() +
+  theme_bw()
+```
+
+### ROC value
+
+Values for the ROC curve range from 0 to 1, with values of 1 indicating perfect accuracy. Values of 0.5 indicate a random model, no better than the mean value of the occurrence data.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_aucval <- performance(abla_predobs, measure = "auc")
+slot(abla_aucval, "y.values")[[1]]
+```
+
+### Other accuracy measures (optional)
+
+Several other accuracy measures can be used, including overall accuracy, true positive rate, and true negative rate and are shown in the graph. These can be calculated using the `performance` function. We won't go into these other than to mention that we can use the results to suggest a cutoff value that would be effective for classifying presence or absence based on the predictions. For example, based on these plots, we could use a cutoff value around 0.56.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_all = performance(abla_predobs, 
+                       measure = "acc")
+abla_pos = performance(abla_predobs, 
+                       measure = "tpr")
+abla_neg = performance(abla_predobs, 
+                       measure = "tnr")
+cutoff <- slot(abla_all, "x.values")[[1]]
+totacc <- slot(abla_all, "y.values")[[1]]
+posacc <- slot(abla_pos, "y.values")[[1]]
+negacc <- slot(abla_neg, "y.values")[[1]]
+abla_accplot <- data.frame(cutoff,
+                           totacc,
+                           posacc,
+                           negacc) |>
+  pivot_longer(cols = one_of("totacc", 
+                             "posacc", 
+                             "negacc"),
+               values_to = "accval",
+               names_to = "accstat")
+
+
+ggplot(data = abla_accplot) +
+  geom_line(aes(x = cutoff, 
+                y = accval,
+                col = accstat)) +
+    labs(x = "Classification Cutoff", 
+         y = "Classification Accuracy",
+         color = "Accuracy Statistic") +
+  scale_color_discrete(labels = c("True Negative Rate",
+                                 "True Positive Rate",
+                                 "Overall Accuracy")) +
+  scale_x_continuous(expand = c(0.005, 0)) +
+  scale_y_continuous(expand = c(0.005, 0)) +
+  coord_fixed() +
+  theme_bw()
+```
+## Predicted occurrence
+
+We can now use the cutoff value to reclassify our predicted probability of occurrence map into a presence/absence map. To do this we will first create a classification matrix and then use the `classify` function from the **terra** package.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+m <- c(0, 0.56, 0,
+       0.56, 1, 1)
+rclmat <- matrix(m, ncol=3, byrow=TRUE)
+abla_cur_01 <- classify(abla_cur, rclmat)
+```
+
+And here is the predicted presence/absence map, which provides us with an idea of the current range of subalpine fir.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+pal <- get_brewer_pal("YlGn", n=5, plot=FALSE)
+tm_basemap(server = c("Esri.WorldTopoMap")) +
+tm_shape(abla_cur_01) + tm_raster(col.scale=tm_scale_intervals(n=2, values=pal), 
+    col.legend = tm_legend(title = "Subalpine fir", position = tm_pos_in("left", "bottom")),
+    col_alpha=1) +
+  tm_shape(bnd) + tm_polygons(fill_alpha=0, col="black", lwd=2)
+```
+
+################################################################################
+
+# Part 5 - Future distribution
+
+In part 5 of the tutorial, we will download projected bioclimatic data and use our model to project the future range of subalpine fir under climate change. We will then compare the areal extent of the current and projected distributions to determine if and how subalpine fir distribution is predicted to change.
+
+Objectives:
+
+1. Download projected bioclimatic data (tiles) from Worldclim
+2. Clip the bioclimatic tiles to KDTT study area
+3. Extract projected bioclimatic data using random subalpine fir locations
+4. Use the bioclimatic data and model to project future distribution
+
+## Projected bioclimatic data
+
+The WorldClim website also includes projected future climate grids based on GCMs from CMIP6. In this example, we use a projection for 2061-2080 (MPI-ESM1.2) based on RCP4.5, which assumes that CO2 emissions will start to decline before 2045 and reach about half of their 2050 levels by 2100. We first download projected bioclimatic data for the period 2061-2080 from the WorldClim.org website. These are the same variables that we used previously. The code to download the data has been commented out since it only needs to be done once. You can also change which scenarios to download. Note that, unlike the normal data we previously downloaded by tiles, this data can only be downloaded on a global scale.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+bnd <- st_read('data/kdtt.gpkg', 'bnd', quiet=TRUE) |>
+  st_transform(4326)
+# Uncomment next 2 lines to download climate data from Worlclim
+#url = "https://geodata.ucdavis.edu/cmip6/30s/MPI-ESM1-2-HR/ssp245/wc2.1_30s_bioc_MPI-ESM1-2-HR_ssp245_2061-2080.tif"
+#download.file(url, destfile="tmp/bio_proj.zip")
+#unzip("bio_proj.zip")
+```
+
+### Read and rename raster layers
+
+Once downloaded, we rename the 19 bioclimatic rasters to bio1-bio19.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+pbio <- rast('../data_raw/wc2.1_30s_bioc_MPI-ESM1-2-HR_ssp245_2061-2080.tif')
+names(pbio)
+names(pbio) <- paste0("bio", 1:19)
+names(pbio)
+```
+
+### Clip covariates to study area
+
+Now we can use the KDTT study area boundary to clip the bioclimatic rasters.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+pbio_crop <- crop(pbio, vect(bnd))
+bio_proj <- mask(pbio_crop, vect(bnd))
+writeRaster(bio_proj, 'data/bio_proj.tif', overwrite=TRUE)
+```
+
+## Apply model to projected bioclimatic rasters
+
+Now we can use the same `predict` function as we used in Part 4 with the difference that we are using the projected bioclimatic data rather than the 30-year normal.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_cur <- rast('data/abla_current.tif')
+abla_mod <- readRDS('data/abla_mod.rda')
+abla_proj <- predict(object = bio_proj, 
+                     model = abla_mod, 
+                     type = "response", 
+                     na.rm = TRUE)
+writeRaster(abla_proj, 'data/abla_future.tif', overwrite=TRUE)
+```
+
+### Current and future predicted probability
+
+We can now map the current and future predicted probability of occurence maps side-by-side using the `par` for parameter function and the mfrow argument - which specifies the number of rows and columns.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+pal <- get_brewer_pal("YlGn", n=5, plot=FALSE)
+tm1 <- tm_shape(abla_cur) + tm_raster(col.scale=tm_scale_intervals(n=5, values=pal), 
+    col.legend = tm_legend(title = "Subalpine fir", position = tm_pos_in("left", "bottom")),
+    col_alpha=1) +
+  tm_shape(bnd) + tm_polygons(fill_alpha=0, col="black", lwd=2)
+tm2 <- tm_shape(abla_proj) + tm_raster(col.scale=tm_scale_intervals(n=5, values=pal), 
+    col.legend = tm_legend(title = "Subalpine fir", position = tm_pos_in("left", "bottom")),
+    col_alpha=1) +
+  tm_shape(bnd) + tm_polygons(fill_alpha=0, col="black", lwd=2)
+tmap_arrange(tm1, tm2)
+```
+
+### Current and future predicted range
+
+We will again use our 0.56 probability cutoff to identify the presence of subalpine fir on the landscape. As an alternative to the `classify` functions we used in Part 4, here we use the `ifel` function to reclassify the probability map into a binary map showing the current or future distribution of subalpine fir. The maps are once again shown side-by-side. As we can see, the future distribution of subalpine fir is projected to be greatly reduce under this climate change scenario. 
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+abla_chg <- c(abla_cur, abla_proj)
+names(abla_chg) <- c("Current", "Future")
+abla_clas <- ifel(abla_chg > 0.56, 1, 0)
+par(mfrow = c(1, 2))
+plot(abla_clas$Current, axes=FALSE, mar = c(2, 2, 1, 1), legend=TRUE, box=TRUE)
+plot(st_geometry(bnd), add=TRUE)
+plot(abla_clas$Future, axes=FALSE, mar = c(2, 2, 1, 1), legend=FALSE, box=TRUE)
+plot(st_geometry(bnd), add=TRUE)
+par(mfrow = c(1, 1))
+```
+
+## Comparing current and future bioclimatic variables
+
+In this last section, we'll compare the current and future distribution of the top four predictor variables. We'll first create a simple function for plotting two histograms, one for the current bioclimatic variable and a second for the same variable projected into the future. We'll then use the function to generate plots for the top four predictors in the model.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+library(ggplot2)
+compare_bio <- function(x, title) {
+  annmean <- c(bio[[x]], bio_proj[[x]])
+  names(annmean) <- c("Current", "Future")
+  annmean_df <- rasterdf(annmean) 
+  ggplot(data = annmean_df) +
+    geom_histogram(aes(x = value), bins = 20) +
+    labs(x = title, 
+         y = "Count of observations") +
+    facet_wrap(~ variable, ncol = 1) +
+    theme_bw()
+}
+```
+
+### Precipitation of driest month
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+compare_bio(x="bio14", title="Precipitation of Driest Month (mm)")
+```
+
+
+### Mean diurnal range
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+compare_bio(x="bio2", title="Mean Diurnal Range (Mean of monthly max temp - min temp) (\u00B0C)")
+```
+
+### Mean temperature of coldest quarter
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+compare_bio(x="bio11", title="Mean Temperature of Coldest Quarter (\u00B0C)")
+```
+
+### Precipitation seasonality
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+compare_bio(x="bio15", title="Precipitation Seasonality (Coefficient of Variation)")
+```
