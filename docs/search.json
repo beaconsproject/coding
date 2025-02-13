@@ -44,9 +44,9 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Coding Resources",
+    "title": "Coding Resources for Conservation Scientists",
     "section": "",
-    "text": "Quantitative Skills for Conservation Scientists\n\nPlanning - Internal use only\n\nObjectives: Learn quantitative skills to conduct a fully replicable analysis\n\nGit and Github\nMarkdown\nR and/or Python\nShiny apps\nStorymaps\n\nThe resources within these pages will help you to:\n\nCreate an individual Github repository to host your code and data and enable others to review and replicate your analysis\nConduct a complete analysis using your own dataset(s)\nCreate a group Github repository to organize useful resources e.g., bookmarks, online tutorials, tips, etc.\n\nSchedule:\nWeek 1 (2024-01-29)\n\nIndividual and group objectives\nCreate a provisional schedule\nInstall R/RStudio, Python/RStudio, or Colab\nCreate an account on Github and install git and GitHub Desktop\nhttps://rverse-tutorials.github.io/RWorkflow-NWFSC-2022/week1-introtogit.html\n\nWeek 2 (2024-02-05)\n\nZach to present his project\nMaegan to present his project = Subalpine fir tutorial - part 1\n\nWeek 3 (2024-02-12)\n\nCloning the �coding� repo\nSubalpine fir tutorial - part 2\nGabriel to present his project\n\nWeek 4 (2024-02-26)"
+    "text": "Coding Resources for Conservation Scientists\nUpdated: 2025-02-13\nThis site contains a growing list of resources and tutorials to enable conservation and citizen scientists to conduct reproducible analyses:\n\nCreate a Github repository to host code and data\nAcquire species and environmental data using R\nDevelop species distribution models using R\nDevelop simple Shiny apps\nUseful resources e.g., bookmarks, online tutorials, tips, etc."
   },
   {
     "objectID": "tips/github.html",

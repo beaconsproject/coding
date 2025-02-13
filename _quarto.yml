@@ -13,11 +13,17 @@ website:
         menu:
         - href: tips/github.qmd
           text: Installing git & github
-        - href: tips/species_data.qmd
-          text: Acquiring species data
-      - text: "Tutorials"
+      - text: "Data"
         menu:
-        - href: tutorials/occurrence.qmd
+        - href: data/species_data.qmd
+          text: Acquiring species data
+        - href: data/cmi.qmd
+          text: Climate moisture index
+        - href: data/climatena.qmd
+          text: Getting climate data
+      - text: "Stats"
+        menu:
+        - href: stats/occurrence.qmd
           text: Species distribution modelling
       - href: resources.qmd
 

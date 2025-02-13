@@ -1,0 +1,143 @@
+---
+title: Climate moisture index
+date: Feb 11, 2025
+---
+
+## Introduction
+
+In this tutorial we will download one variable (CMI, climate moisture index) for two time periods, a normal period (1961-1990) and a projected period (SSP585 2071-2100). We will then use a vector file of our AOI to clip out the downloaded rasters to our AOI. CMI is a measure of water deficit or surplus (cm water/year) in soil based on yearly average precipitation minus yearly potential evapotranspiration. Negative values indicate a deficit while positive values indicate a surplus. As global temperature increases, CMI is expected to increase i.e., dryer conditions will decrease in extent.
+
+The `ClimateNAr` library enables the downloading of up to 800m resolution climate normals and projections for BC and western NA. In this tutorial, we will illustrate the use of the `ClimateNAr` package along with the `terra` package for downloading and plotting climate moisture index (CMI) normal and projected rasters. Prior to using it, the `ClimateNAr` package needs to be downloaded and installed manually following these instructions:
+
+1. Go to [https://register.climatena.ca/](https://register.climatena.ca/) and register
+2. Download the ClimateBC/NA R package and documentation
+3. Start R, go to the Packages menu, and select "Install package(s) from local file"
+4. Once installed, restart R and load the package: library(ClimateNAr)
+
+CMI and other climate datasets can also be downloaded at these websites:
+
+- https://climatebc.ca/
+- https://climatena.ca/
+
+### Load required libraries
+
+Make sure the following libraries and installed and loaded.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+library(sf)
+library(dplyr)
+library(terra)
+library(ClimateNAr)
+```
+
+### Create output directories
+
+We will create two new directories, a temporary folder in which to download files from ClimateNA and an output folder in which to save our resultant data.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+tmpDir <- 'tmp/'
+outDir <- 'data/'
+if (!dir.exists(tmpDir)) dir.create(tmpDir)
+if (!dir.exists(outDir)) dir.create(outDir)
+```
+
+### Download data
+
+We will use the rasterDownload function to download CMI normal and projected. We start by reading our boundary layer, FDA 10AB, and converting it to lat/long (EPSG:4326) which is the standard CRS for the ClimateNA data.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+bnd <- st_read('data/fda10ab.gpkg', quiet=T) |>
+  st_transform(4326)
+```
+
+We then download the CMI normal (1961-1990) and CMI projected (SSP585 2071-2100) files and clip to our AOI.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+if (!file.exists(paste0(tmpDir,'WNA/800m/Normal_1961_1990/cmi.tif'))) {
+  rasterDownload(region='WNA',res='800m', period='Normal_1961_1990',varList='cmi',sDir=tmpDir)
+  cmi1 <- rast(paste0(tmpDir, 'WNA/800m/Normal_1961_1990/cmi.tif')) |>
+    #project(bnd, res=800) |>
+    crop(bnd) |>
+    mask(bnd)
+  writeRaster(cmi1, paste0(outDir, 'cmi_norm.tif'), overwrite=TRUE)
+}
+if (!file.exists(paste0(tmpDir, 'WNA/800m/8GCMs_ensemble_ssp585_2071-2100/cmi.tif'))) {
+  rasterDownload(region='WNA',res='800m', period='8GCMs_ensemble_ssp585_2071-2100',varList='cmi',sDir=tmpDir)
+  cmi2 <- rast(paste0(tmpDir, 'WNA/800m/8GCMs_ensemble_ssp585_2071-2100/cmi.tif')) |>
+    #project(bnd, res=800) |>
+    crop(bnd) |>
+    mask(bnd)
+  writeRaster(cmi2, paste0(outDir, 'cmi_proj.tif'), overwrite=TRUE)
+}
+```
+
+If the CMI rasters have already been downloaded, they will be loaded here.
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+cmi1 <- rast(paste0(outDir, 'cmi_norm.tif'))
+cmi2 <- rast(paste0(outDir, 'cmi_proj.tif'))
+```
+
+### Plot CMI normal and projected
+
+Plot CMI normal and projected side-by-side. The plots reveal that CMI values are projected to shift downwards in the future i.e., dryer values will increase in extent.
+
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+#| fig-height: 8
+#| fig-width: 10
+brks <- c(-10,0,10,20,30,40,50,60,70,80,90,100)
+d1 <- classify(cmi1, brks)
+d2 <- classify(cmi2, brks)
+par(mfrow=c(1,2))
+plot(d1, type="classes", all_levels=TRUE, col=map.pal("ryb"), plg = list(loc = "bottomleft", cex=1))
+plot(bnd, col=NA, lwd=2, add=TRUE)
+title(main="CMI 1961-1990")
+plot(d2, type="classes", all_levels=TRUE, col=map.pal("ryb"), plg = list(loc = "bottomleft", cex=1))
+plot(bnd, col=NA, lwd=2, add=TRUE)
+title(main="CMI 2071-2100")
+```
+
+### Optional: Plot using `tmap`
+
+```{r}
+#| message: FALSE
+#| warning: FALSE
+#| fig-height: 7.5
+#| fig-width: 7.5
+library(tmap)
+brks <- c(-10,0,10,20,30,40,50,60,70,80,90,100)
+tm1 <- tm_shape(cmi1) + 
+  tm_raster(
+    col.scale=tm_scale(breaks=brks, values="brewer.rd_yl_bu", midpoint=NA),
+    col.legend=tm_legend(title="", position=tm_pos_in("left","bottom"), frame=TRUE)) + 
+  tm_shape(bnd) + 
+  tm_borders(col="black") +
+  tm_title("CMI 1961-1990")
+
+tm2 <- tm_shape(cmi2) + 
+  tm_raster(
+    col.scale=tm_scale(breaks=brks, 
+      values="brewer.rd_yl_bu", 
+      midpoint=NA),
+    col.legend=tm_legend(title="", 
+      position=tm_pos_in("left","bottom"), 
+      frame=TRUE)) + 
+  tm_shape(bnd) + 
+  tm_borders(col="black") +
+  tm_title("CMI 2071-2100")
+
+tmap_arrange(tm1, tm2)
+```
